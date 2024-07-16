@@ -1,0 +1,21 @@
+{
+  "name": "imhtml",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@types/node": "^20.14.10",
+    "lit": "3.1.4",
+    "vitest": "^2.0.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "unplugin-isolated-decl": "^0.4.1",
+    "vite": "^5.3.1"
+  }
+}
