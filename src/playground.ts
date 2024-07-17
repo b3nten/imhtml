@@ -1,61 +1,55 @@
-import { css, html, LitElement } from "lit";
+import { css, CSSResultGroup, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import * as iui from "./mod";
 export * as iui from "./mod"
+import { autoWatch, component, ImHtmlElement, watch } from "./base";
 
-@customElement("test-panel")
-export class Panel extends LitElement {
-  
-  mockData = {
-    number: 5,
-    string: "Hello",
-    boolean: false,
-    enum: {
-      options: ["Option 1", "Option 2", "Option 3"],
-      value: "Option 1",
-    },
-    vec: [1, 2, 3],
-  };
+@component("imhtml-test")
+class TestComponent extends ImHtmlElement {
 
-  numberGetterSetter = {
-    get: () => this.mockData.number,
-    set: (value: number) => {
-      console.log("Setting number to", value);
-      this.mockData.number = value;
-    },
+  static styles = css`
+    .root {
+      max-width: 500px;
+      background-color: white;
+      padding: 1rem;
+    }
+  `
+
+  @watch() get width(){
+    return window.innerWidth;
   }
 
   render() {
     return html`
-			<iui-panel>
-        <div>
-          <iui-number .value=${iui.createObservableProperty(this.mockData, "number")}></iui-input>
-        </div>
-        <div>
-          <iui-number .value=${iui.createObservableProperty(12)}></iui-input>
-        </div>
-        <div>
-          <iui-string .value=${iui.createObservableProperty(this.mockData, "string")}></iui-string>
-        </div>
-        <div>
-          <iui-string .value=${iui.createObservableProperty("LOL")}></iui-string>
-        </div>
-        <div>
-          <iui-boolean .value=${{ get: () => false, set: (val)=> this.mockData.boolean = val }}></iui-boolean> 
-        </div>
-        <div>
-          <iui-button @click="${() => alert("WOO")}">click me</iui-boolean> 
-        </div>
-        <div>
-          <iui-vector></iui-vector>
-        </div>
-			</iui-panel>
+      <div class='root'>
+        <h1>Width: ${this.width}</h1>
+      </div>
+    `;
+  }
+}
+
+@customElement("test-panel")
+export class Panel extends ImHtmlElement {
+
+  static styles = css`
+    .center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  `
+
+  render() {
+    return html`
+      <div class='center'>
+        <imhtml-test></imhtml-test>
+      </div>
 		`;
   }
 }
 
 @customElement("bg-image")
-export class BGImage extends LitElement {
+export class BGImage extends ImHtmlElement {
   static styles = css`
     img {
       position: fixed;

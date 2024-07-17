@@ -95,50 +95,59 @@ class Scheduler {
 	}
 }
 
+export function watch() {
+	return function (
+		value: any, 
+		ctx: ClassFieldDecoratorContext | ClassGetterDecoratorContext | ClassMethodDecoratorContext | ClassSetterDecoratorContext | ClassAccessorDecoratorContext
+	) {
+
+		if(ctx.kind === "method"){
+			function replacementMethod(this: any, ...args: any[]) {
+				const result = value.call(this, ...args);
+				this.requestUpdate();
+				return result;
+			}
+			return replacementMethod;
+		}
+
+		if(ctx.kind === "setter"){
+			function replacementSetter(this: any, newValue: any) {
+				value.call(this, newValue);
+				this.requestUpdate();
+			}
+			return replacementSetter;
+		}
+
+		if(ctx.kind === "field" || ctx.kind === "getter"){
+			ctx.addInitializer(function(){
+				this.autoProps = this.autoProps || [];
+				this.autoProps.push(ctx.name);
+			})
+		}
+	}
+}
+
 export class ImHtmlElement extends LitElement {
 
 	#previousValues: Array<unknown> = [];
 
 	#diff(){
 		const recursiveDiff = (a: unknown[], b: unknown[]): boolean => {
+
 			if(a.length !== b.length) {			
-				console.log("A")
 				return true;
 			}
 
 			for(let i = 0; i < a.length; i++) {
-				if(a[i] && typeof a[i] === "object" && "_$litType$" in a[i]) {
-					if(!b[i] || typeof b[i] !== "object" || !("_$litType$" in b[i])) {
-						return true;
-					}
-					const nestedValues = (a[i] as TemplateResult).values;
-					const nestedPreviousValues = (b[i] as TemplateResult).values;
-					if(nestedValues.length !== nestedPreviousValues.length) {
-						return true;
-					}
-					if(recursiveDiff(nestedValues, nestedPreviousValues)) {
-						return true;
-					}
-					return false;
+				const prev = a[i];
+				const next = b[i];
+
+				if(isLitTemplateResult(prev) && isLitTemplateResult(next)) {
+					return recursiveDiff(prev.values, next.values);
 				}
 
-
-
-				if(Array.isArray(a[i]) && Array.isArray(b[i])) {
-					if(IMHTMLKey in a[i] && IMHTMLKey in b[i]) {
-						if(a[i][IMHTMLKey] === b[i][IMHTMLKey]) {
-							return false;
-						}
-					}
-					return recursiveDiff(a[i], b[i]);
-				}
-
-				if(typeof a[i] === "object" && typeof b[i] === "object") {
-					if(IMHTMLKey in a?.[i] && IMHTMLKey in b?.[i]) {
-						if(a[i][IMHTMLKey] === b[i][IMHTMLKey]) {
-							return false;
-						}
-					}
+				if(Array.isArray(prev) && Array.isArray(next)) {
+					return recursiveDiff(prev, next);
 				}
 
 				if(a[i] !== b[i]) {
