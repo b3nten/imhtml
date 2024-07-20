@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@spectrum-web-components/badge':
+    specifier: ^0.44.0
+    version: 0.44.0
   '@spectrum-web-components/bundle':
     specifier: ^0.44.0
     version: 0.44.0

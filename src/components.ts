@@ -1,8 +1,9 @@
-import { component, html, ImHtmlElement, property, watch } from "./base";
+import { component, css, html, ImHtmlElement, property, watch } from "./base";
 import '@spectrum-web-components/number-field/sp-number-field.js';
 import '@spectrum-web-components/textfield/sp-textfield.js';
 import '@spectrum-web-components/button/sp-button.js';
 import '@spectrum-web-components/switch/sp-switch.js';
+import '@spectrum-web-components/badge/sp-badge.js';
 
 
 type GetterSetterPair<T> = {
@@ -129,6 +130,9 @@ export class ImHtmlCheckbox extends ImHtmlElement {
 	}
 
 	render(){
+		if(!hasSetter(this.value)){
+			return html`<sp-badge class='non-interactive'>${this._value ? "True" : "False"}</sp-badge>`;
+		}
 		return html`<sp-switch ?checked=${this._value} @change=${this.#setValue}>${this._label}</sp-switch>`;
 	}
 

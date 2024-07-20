@@ -13,7 +13,7 @@ export class PlaygroundApp extends ImHtmlElement {
       gap: 1rem;
       padding: 1rem;
     }
-    vstack {
+    v-stack {
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -31,7 +31,7 @@ export class PlaygroundApp extends ImHtmlElement {
         color="dark"
         scale="small"
       >
-        <vstack>
+        <v-stack>
           <im-number value="38"></im-number>
           <im-number .value=${{ get: () => this.number, set: (v: number) => this.number = v }}></im-number>
           <im-text value="Hello World"></im-text>
@@ -39,7 +39,7 @@ export class PlaygroundApp extends ImHtmlElement {
           <im-button @click=${() => this.text = "Hello World"}>Change Text</im-button>
           <im-boolean value="true"></im-boolean>
           <im-boolean .value=${{ get: () => this.boolean, set: (v: boolean) => this.boolean = v }}></im-boolean>
-        </vstack>
+        </v-stack>
       </sp-theme>
     `;
   }

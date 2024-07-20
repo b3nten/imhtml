@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@spectrum-web-components/badge": "^0.44.0",
     "@spectrum-web-components/bundle": "^0.44.0",
     "@spectrum-web-components/button": "^0.44.0",
     "@spectrum-web-components/checkbox": "^0.44.0",
