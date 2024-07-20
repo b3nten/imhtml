@@ -1,54 +1,51 @@
-import { css, CSSResultGroup, html } from "lit";
-import { customElement } from "lit/decorators.js";
-export * as iui from "./mod"
-import { autoWatch, component, ImHtmlElement, watch } from "./base";
+import { css, html } from "lit";
+import { component, ImHtmlElement } from "./base";
+import '@spectrum-web-components/theme/sp-theme.js';
+import '@spectrum-web-components/theme/src/themes.js';
+import "./components";
 
-@component("imhtml-test")
-class TestComponent extends ImHtmlElement {
-
+@component("playground-app")
+export class PlaygroundApp extends ImHtmlElement {
   static styles = css`
-    .root {
-      max-width: 500px;
-      background-color: white;
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
       padding: 1rem;
+    }
+    vstack {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
   `
 
-  @watch() get width(){
-    return window.innerWidth;
-  }
+  number = 5;
+  text = "Hello";
+  boolean = true;
 
   render() {
     return html`
-      <div class='root'>
-        <h1>Width: ${this.width}</h1>
-      </div>
+      <sp-theme     
+        system="spectrum"
+        color="dark"
+        scale="small"
+      >
+        <vstack>
+          <im-number value="38"></im-number>
+          <im-number .value=${{ get: () => this.number, set: (v: number) => this.number = v }}></im-number>
+          <im-text value="Hello World"></im-text>
+          <im-text .value=${{ get: () => this.text, set: (v: string) => this.text = v }}></im-text>
+          <im-button @click=${() => this.text = "Hello World"}>Change Text</im-button>
+          <im-boolean value="true"></im-boolean>
+          <im-boolean .value=${{ get: () => this.boolean, set: (v: boolean) => this.boolean = v }}></im-boolean>
+        </vstack>
+      </sp-theme>
     `;
   }
 }
 
-@customElement("test-panel")
-export class Panel extends ImHtmlElement {
-
-  static styles = css`
-    .center {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-  `
-
-  render() {
-    return html`
-      <div class='center'>
-        <imhtml-test></imhtml-test>
-      </div>
-		`;
-  }
-}
-
-@customElement("bg-image")
+@component("bg-image")
 export class BGImage extends ImHtmlElement {
   static styles = css`
     img {
@@ -62,11 +59,14 @@ export class BGImage extends ImHtmlElement {
       object-fit: cover;
     }
   `
+
+  onMount(): void {
+    document.body.style.margin = "0";
+  }
+
   render() {
     return html`
       <img src="https://unsplash.com/photos/axhLuc-JskI/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8Ym84alFLVGFFMFl8fHx8fDJ8fDE3MjA5OTM3Mjh8&force=true&w=2400">
     `;
   }
 }
-
-document.body.style.margin = "0";

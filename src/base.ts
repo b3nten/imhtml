@@ -29,11 +29,10 @@ export function watch() {
 		}
 
 		if(ctx.kind === "setter"){
-			function replacementSetter(this: any, newValue: any) {
+			return function replacementSetter(this: any, newValue: any) {
 				value.call(this, newValue);
 				this.requestUpdate();
 			}
-			return replacementSetter;
 		}
 
 		if(ctx.kind === "accessor" || ctx.kind === "field" || ctx.kind === "getter"){
@@ -42,6 +41,34 @@ export function watch() {
 				this.watchedProps.add(ctx.name);
 			})
 			return;
+		}
+	}
+}
+
+export function convert(fn: Function){
+	return function (
+		value: any, 
+		ctx: ClassFieldDecoratorContext | ClassGetterDecoratorContext | ClassSetterDecoratorContext | ClassAccessorDecoratorContext
+	): any {
+		if(ctx.kind === "setter"){
+			return function replacementSetter(this: any, newValue: any) {
+				value.call(this, fn(newValue));
+			}
+		}
+		if(ctx.kind === "getter"){
+			return function replacementGetter(this: any) {
+				return fn(value.call(this));
+			}
+		}
+		if(ctx.kind === "accessor"){
+			return {
+				get(this: any) {
+					return fn(value.get.call(this));
+				},
+				set(this: any, newValue: any) {
+					value.set.call(this, fn(newValue));
+				}
+			}
 		}
 	}
 }
@@ -130,6 +157,9 @@ export class ImHtmlElement extends LitElement {
 
 	#update(){
 		for(const prop of this.watchedProps) {
+			if(prop.startsWith("#")){
+				throw new Error("Private properties cannot be watched");
+			}
 			if(this.#lastPropValues[prop] !== this[prop as keyof this]) {
 				this.#lastPropValues[prop] = this[prop as keyof this];
 				this.requestUpdate()

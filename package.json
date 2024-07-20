@@ -9,6 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@spectrum-web-components/bundle": "^0.44.0",
+    "@spectrum-web-components/button": "^0.44.0",
+    "@spectrum-web-components/checkbox": "^0.44.0",
+    "@spectrum-web-components/number-field": "^0.44.0",
+    "@spectrum-web-components/switch": "^0.44.0",
+    "@spectrum-web-components/textfield": "^0.44.0",
+    "@spectrum-web-components/theme": "^0.44.0",
     "@types/node": "^20.14.10",
     "lit": "3.1.4",
     "vitest": "^2.0.2"

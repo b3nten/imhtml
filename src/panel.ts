@@ -1,11 +1,42 @@
 import { CollapsableController, DraggableController } from "./controllers";
-import { component, css, html, property, watch } from "./base";
-import { ImHtmlElement } from "./mod";
+import { component, css, html, property, watch, ImHtmlElement } from "./base";
 
 @component("iui-panel")
 export class IUIPanel extends ImHtmlElement {
 
-	@watch() @property({ attribute: true, type: Boolean }) accessor open = true;
+	static styles = css`
+	.root {
+		position: fixed;
+		height: auto;
+		border-radius: .5rem;
+		overflow: hidden;
+		background-color: rgba(128, 128, 128);
+		min-width: 300px;
+		max-width: 600px;
+		userSelect: "none";
+		transition: "height .3s";
+	
+	.header {
+		display: flex;
+		justify-content: space-between;
+		background-color: rgb(100, 100, 100);
+		align-items: center;
+		gap: .5rem;
+		padding: .5rem;
+		cursor: pointer;
+		user-select: none;
+		color: white;
+	
+	.container {
+		padding: .5rem;
+		overflow: hidden;
+		transition: opacity .3s;
+	}
+`;
+
+	@watch() 
+	@property({ attribute: true, type: Boolean }) 
+	accessor open = true;
 
 	private draggableController = new DraggableController(this);
 
@@ -15,36 +46,6 @@ export class IUIPanel extends ImHtmlElement {
 		super();
 		this.collapsableController.collapsed = !this.open;
 	}
-
-	static styles = css`
-		.root {
-			position: fixed;
-			height: auto;
-			border-radius: .5rem;
-			overflow: hidden;
-			background-color: rgba(128, 128, 128);
-			min-width: 300px;
-			max-width: 600px;
-			userSelect: "none";
-			transition: "height .3s";
-		
-		.header {
-			display: flex;
-			justify-content: space-between;
-			background-color: rgb(100, 100, 100);
-			align-items: center;
-			gap: .5rem;
-			padding: .5rem;
-			cursor: pointer;
-			user-select: none;
-			color: white;
-		
-		.container {
-			padding: .5rem;
-			overflow: hidden;
-			transition: opacity .3s;
-		}
-	`;
 
 	render() {
 		return html`

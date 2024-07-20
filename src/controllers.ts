@@ -175,11 +175,7 @@ export class CollapsableController implements ReactiveController {
  *****************************************************************************************/
 
 export class ResizableController implements ReactiveController {
-
 	constructor(host: ReactiveControllerHost){
 		host.addController(this);
 	}
-
-	
-
 }
