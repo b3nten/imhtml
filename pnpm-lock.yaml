@@ -14,10 +14,22 @@ dependencies:
   '@spectrum-web-components/button':
     specifier: ^0.44.0
     version: 0.44.0
+  '@spectrum-web-components/card':
+    specifier: ^0.44.0
+    version: 0.44.0
   '@spectrum-web-components/checkbox':
     specifier: ^0.44.0
     version: 0.44.0
+  '@spectrum-web-components/menu':
+    specifier: ^0.44.0
+    version: 0.44.0
   '@spectrum-web-components/number-field':
+    specifier: ^0.44.0
+    version: 0.44.0
+  '@spectrum-web-components/picker':
+    specifier: ^0.44.0
+    version: 0.44.0
+  '@spectrum-web-components/slider':
     specifier: ^0.44.0
     version: 0.44.0
   '@spectrum-web-components/switch':
@@ -32,9 +44,15 @@ dependencies:
   '@types/node':
     specifier: ^20.14.10
     version: 20.14.10
+  import:
+    specifier: ^0.0.6
+    version: 0.0.6
   lit:
     specifier: 3.1.4
     version: 3.1.4
+  perfect-debounce:
+    specifier: ^1.0.0
+    version: 1.0.0
   vitest:
     specifier: ^2.0.2
     version: 2.0.2(@types/node@20.14.10)
@@ -1549,6 +1567,14 @@ packages:
     engines: {node: '>=16.17.0'}
     dev: false
 
+  /import@0.0.6:
+    resolution: {integrity: sha512-QPhTdjy9J4wUzmWSG7APkSgMFuPGPw+iJTYUblcfc2AfpqaatbwgCldK1HoLYx+v/+lWvab63GWZtNkcnj9JcQ==}
+    engines: {node: '>=0.10.0'}
+    hasBin: true
+    dependencies:
+      optimist: 0.3.7
+    dev: false
+
   /is-binary-path@2.1.0:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
@@ -1653,6 +1679,12 @@ packages:
       mimic-fn: 4.0.0
     dev: false
 
+  /optimist@0.3.7:
+    resolution: {integrity: sha512-TCx0dXQzVtSCg2OgY/bO9hjM9cV4XYx09TVK+s3+FhkjT6LovsLe+pPMzpWf+6yXK/hUizs2gUoTw3jHM0VaTQ==}
+    dependencies:
+      wordwrap: 0.0.3
+    dev: false
+
   /oxc-transform@0.16.3:
     resolution: {integrity: sha512-0VzI9MtIdsU46G73qCo+tIHP9sO+Ok8a68htz80eX0+aROONEKcCzJcyRXrJo0NBtiaD4Gx+GqbhthfZdJxDgw==}
     optionalDependencies:
@@ -1683,6 +1715,10 @@ packages:
   /pathval@2.0.0:
     resolution: {integrity: sha512-vE7JKRyES09KiunauX7nd2Q9/L7lhok4smP9RZTDeD4MVs72Dp2qNFVz39Nz5a0FVEW0BJR6C0DYrq6unoziZA==}
     engines: {node: '>= 14.16'}
+    dev: false
+
+  /perfect-debounce@1.0.0:
+    resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
     dev: false
 
   /picocolors@1.0.1:
@@ -1975,4 +2011,9 @@ packages:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+    dev: false
+
+  /wordwrap@0.0.3:
+    resolution: {integrity: sha512-1tMA907+V4QmxV7dbRvb4/8MaRALK6q9Abid3ndMYnbyo8piisCmeONVqVSXqQA3KaP4SLt5b7ud6E2sqP8TFw==}
+    engines: {node: '>=0.4.0'}
     dev: false

@@ -3,26 +3,37 @@ import { component, ImHtmlElement } from "./base";
 import '@spectrum-web-components/theme/sp-theme.js';
 import '@spectrum-web-components/theme/src/themes.js';
 import "./components";
+import "./panel"
 
 @component("playground-app")
 export class PlaygroundApp extends ImHtmlElement {
   static styles = css`
     :host {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    v-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
     }
   `
 
   number = 5;
   text = "Hello";
   boolean = true;
+
+  enum = {
+    value: "Orange",
+    options: [
+      "Red",
+      "Orange",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Indigo",
+      "Violet"
+    ]
+  }
+  
 
   render() {
     return html`
@@ -31,15 +42,9 @@ export class PlaygroundApp extends ImHtmlElement {
         color="dark"
         scale="small"
       >
-        <v-stack>
-          <im-number value="38"></im-number>
-          <im-number .value=${{ get: () => this.number, set: (v: number) => this.number = v }}></im-number>
-          <im-text value="Hello World"></im-text>
-          <im-text .value=${{ get: () => this.text, set: (v: string) => this.text = v }}></im-text>
-          <im-button @click=${() => this.text = "Hello World"}>Change Text</im-button>
-          <im-boolean value="true"></im-boolean>
-          <im-boolean .value=${{ get: () => this.boolean, set: (v: boolean) => this.boolean = v }}></im-boolean>
-        </v-stack>
+        <im-panel>
+          hello
+        </im-panel>
       </sp-theme>
     `;
   }
@@ -59,10 +64,6 @@ export class BGImage extends ImHtmlElement {
       object-fit: cover;
     }
   `
-
-  onMount(): void {
-    document.body.style.margin = "0";
-  }
 
   render() {
     return html`

@@ -5,7 +5,7 @@ export { property, query, html, css, svg };
 
 export const component = customElement;
 
-export function watch() {
+export function track() {
 	return function (
 		value: any, 
 		ctx: ClassFieldDecoratorContext | ClassGetterDecoratorContext | ClassMethodDecoratorContext | ClassSetterDecoratorContext | ClassAccessorDecoratorContext

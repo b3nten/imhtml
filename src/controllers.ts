@@ -66,7 +66,7 @@ export class DraggableController implements ReactiveController {
 		this.#root!.style.transform = `translate(${this.x}px, ${this.y}px)`;
 	};
 
-	#onDragEnd = (e: MouseEvent) => {
+	#onDragEnd = () => {
 		this.dragging = false;
 		this.mouseDown = false;
 
@@ -74,22 +74,44 @@ export class DraggableController implements ReactiveController {
 		window.removeEventListener("mouseup", this.#onDragEnd);
 	};
 
+	#onWindowResize = () => {
+		const bounds = this.#root!.getBoundingClientRect();
+
+		const x = Math.max(
+			0,
+			Math.min(this.last.x, window.innerWidth - bounds.width),
+		);
+		const y = Math.max(
+			0,
+			Math.min(this.last.y, window.innerHeight - bounds.height),
+		);
+
+		this.x = x;
+		this.y = y;
+
+		this.#root!.style.transform = `translate(${this.x}px, ${this.y}px)`;
+	}
+
 	bindRoot() {
 		return ref((root) => {
-			if (!(root instanceof HTMLElement)) {
-				throw new Error("Root must be an HTMLElement");
-			}
-			this.#root = root;
+			if (!root) return;
+			this.#root = root as HTMLElement;
 		});
 	}
 
 	bindHandle() {
 		return ref((childContainer) => {
-			if (!(childContainer instanceof HTMLElement)) {
-				throw new Error("Child container must be an HTMLElement");
-			}
-			this.#handle = childContainer;
+			if (!childContainer) return;
+			this.#handle = childContainer as HTMLElement;
 		});
+	}
+
+	hostConnected(): void {
+		window.addEventListener("resize", this.#onWindowResize);
+	}
+
+	hostDisconnected(): void {
+		window.removeEventListener("resize", this.#onWindowResize);
 	}
 
 	hostUpdated(): void {
@@ -103,18 +125,21 @@ export class DraggableController implements ReactiveController {
 
 export class CollapsableController implements ReactiveController {
 	#container: HTMLElement | undefined;
+
 	#trigger: HTMLElement | undefined;
+
+	#root: HTMLElement | undefined;
 
 	#startPosition = { x: 0, y: 0 };
 
-	hostConnected(): void {
-		if (this.collapsed) {
-			this.close();
-		}
+	isOpen = true;
+
+	constructor(host: ReactiveControllerHost) {
+		host.addController(this);
 	}
 
-	constructor(host: ReactiveControllerHost, public collapsed = false) {
-		host.addController(this);
+	hostConnected(): void {
+	
 	}
 
 	#onMouseDown = (e: MouseEvent) => {
@@ -132,10 +157,8 @@ export class CollapsableController implements ReactiveController {
 
 	bindTrigger() {
 		return ref((trigger) => {
-			if (!(trigger instanceof HTMLElement)) {
-				throw new Error("Trigger must be an HTMLElement");
-			}
-			this.#trigger = trigger;
+			if(!trigger) return;
+			this.#trigger = trigger as HTMLElement;
 			this.#trigger.addEventListener("mousedown", this.#onMouseDown);
 			this.#trigger.addEventListener("mouseup", this.#onMouseUp);
 		});
@@ -143,39 +166,74 @@ export class CollapsableController implements ReactiveController {
 
 	bindContainer() {
 		return ref((container) => {
-			if (!(container instanceof HTMLElement)) {
-				throw new Error("Container must be an HTMLElement");
-			}
-			this.#container = container;
+			if(!container) return;
+			this.#container = container as HTMLElement;
 		});
 	}
 
-	open() {
-		this.#container!.style.display = "block"
-		this.collapsed = false;
+	bindRoot() {
+		return ref((root) => {
+			if(!root) return;
+			this.#root = root as HTMLElement;
+		});
 	}
 
-	close() {
-		this.#container!.style.display = "none"
-		this.collapsed = true;
+	open({immediate = false} = {}) {
+		if(this.isOpen) return;
+
+		const oldRootHeight = this.#root!.getBoundingClientRect().height;
+		this.#root!.style.height = `auto`;
+		const newRootHeight = this.#root!.getBoundingClientRect().height;
+
+		const anim = this.#root!.animate(
+			{ height: [`${oldRootHeight}px`,`${newRootHeight}px`] },
+			{
+				duration: immediate ? 0 : (newRootHeight - oldRootHeight),
+				easing: "ease-in-out",
+				fill: "forwards",
+			},
+		);
+
+		anim.finished.then(() => {
+			anim.commitStyles();
+			anim.cancel();
+			this.isOpen = true;
+		})
 	}
 
-	toggle() {
-		console.log(this.#container?.clientHeight);
-		if (this.collapsed) {
-			this.open();
+	close({immediate = false} = {}) {
+		if(!this.isOpen) return;
+
+		const oldRootHeight = this.#root!.getBoundingClientRect().height;
+		const containerDisplay = this.#container!.style.display;
+		this.#container!.style.display = "none";
+		this.#root!.style.height = 'auto';
+		const newRootHeight = this.#root!.getBoundingClientRect().height;
+		this.#container!.style.display = containerDisplay;
+		
+		const anim = this.#root!.animate(
+			{ height: [`${oldRootHeight}px`,`${newRootHeight}px`] },
+			{
+				duration: immediate ? 0 : (oldRootHeight - newRootHeight),
+				easing: "ease-in-out",
+				fill: "forwards",
+			},
+		);
+
+		anim.finished.then(() => {
+			anim.commitStyles();
+			anim.cancel();
+			this.isOpen = false;
+		})
+
+	}
+
+	toggle({immediate = false} = {}) {
+		if(this.isOpen){
+			this.close({ immediate });
 		} else {
-			this.close();
+			this.open({ immediate });
 		}
 	}
 }
 
-/****************************************************************************************
- * ResizableController
- *****************************************************************************************/
-
-export class ResizableController implements ReactiveController {
-	constructor(host: ReactiveControllerHost){
-		host.addController(this);
-	}
-}
