@@ -1,9 +1,38 @@
 import { LitElement, TemplateResult, html, css, svg } from "lit";
 import { property, query, customElement } from "lit/decorators.js";
 
-export { property, query, html, css, svg };
+/****************************************************************************************
+ * Exports
+ *****************************************************************************************/
 
-export const component = customElement;
+export { 
+	property, 
+	query, 
+	html, 
+	html as h,
+	css, 
+	css as c,
+	svg,
+	customElement as component,
+};
+
+/****************************************************************************************
+ * Utils
+ *****************************************************************************************/
+
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+const isLitTemplateResult = (value: unknown): value is TemplateResult => {
+	return !!value && (typeof value === "object") && ("_$litType$" in value);
+}
+
+const isFn = (value: unknown): value is Function => {
+	return typeof value === "function";
+}
+
+/****************************************************************************************
+ * Decorators
+ *****************************************************************************************/
 
 export function track() {
 	return function (
@@ -73,6 +102,10 @@ export function convert(fn: Function){
 	}
 }
 
+/****************************************************************************************
+ * Scheduler
+ *****************************************************************************************/
+
 class Scheduler {
 	static components: Set<() => void> = new Set();
 
@@ -96,83 +129,97 @@ class Scheduler {
 	}
 }
 
-const isLitTemplateResult = (value: unknown): value is TemplateResult => {
-	return !!value && (typeof value === "object") && ("_$litType$" in value);
-}
+/****************************************************************************************
+ * ImHtmlElement
+ *****************************************************************************************/
 
-const isFn = (value: unknown): value is Function => {
-	return typeof value === "function";
-}
-
-export class ImHtmlElement extends LitElement {
-
-	static WatchRender = false;
-
-	#lastPropValues: Record<string, any> = {};
-	#lastRenderValues: unknown[] = [];
-
-	protected watchedProps: Set<string> = new Set();
-
-	connectedCallback() {
-		super.connectedCallback();
-		Scheduler.subscribe(this.#update.bind(this));
-	}
-
+export interface IImHtmlElement extends LitElement {
+	trackedProps: Set<string>;
 	onMount?(): void;
 	onUnmount?(): void;
 	onUpdate?(): void;
+}
 
-	#diff(a: unknown[], b: unknown[]): boolean {
+export function ImHtml(SuperClass: Constructor<LitElement>): Constructor<IImHtmlElement> {
+	class ClassWithImHTML extends SuperClass {
 
-		if(a.length !== b.length) {			
-			return true;
+		trackedProps: Set<string> = new Set();
+
+		#lastTrackedValues: Record<string, any> = {};
+		#lastRenderValues: unknown[] = [];
+
+		connectedCallback() {
+			super.connectedCallback();
+			Scheduler.subscribe(this.#compareTrackedEntities.bind(this));
 		}
 
-		for(let i = 0; i < a.length; i++) {
-			const prev = a[i], next = b[i];
-
-			if(isFn(prev) && isFn(next)){
-				if(prev.name !== next.name) {
-					return true;
-				} else {
-					continue;
-				}
-			}
-
-			if(isLitTemplateResult(prev) && isLitTemplateResult(next)) {
-				return this.#diff(prev.values, next.values);
-			}
-
-			if(Array.isArray(prev) && Array.isArray(next)) {
-				return this.#diff(prev, next);
-			}
-
-			if(a[i] !== b[i]) {
+		#compareRenderOutput(a: unknown[] | TemplateStringsArray, b: unknown[] | TemplateStringsArray): boolean {
+			// if the lengths are different, we know the values are different and bail early
+			if(a.length !== b.length) {
 				return true;
 			}
+
+			for(let i = 0; i < a.length; i++) {
+				const prev = a[i], next = b[i];
+
+				// functions are compared by name
+				if(isFn(prev) && isFn(next)){
+					if(prev.name !== next.name) {
+						return true;
+					} else {
+						continue;
+					}
+				}
+
+				// lit template results are compared by their values
+				if(isLitTemplateResult(prev) && isLitTemplateResult(next)) {
+					return this.#compareRenderOutput(prev.values, next.values) && this.#compareRenderOutput(prev.strings, next.strings);
+				}
+
+				// arrays are deeply compared
+				if(Array.isArray(prev) && Array.isArray(next)) {
+					return this.#compareRenderOutput(prev, next);
+				}
+
+				// strict equality check
+				if(a[i] !== b[i]) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
-		return false;
-	}
+		#compareTrackedEntities(){
+			for(const prop of this.trackedProps) {
 
-	#update(){
-		for(const prop of this.watchedProps) {
-			if(prop.startsWith("#")){
-				throw new Error("Private properties cannot be watched");
-			}
-			if(this.#lastPropValues[prop] !== this[prop as keyof this]) {
-				this.#lastPropValues[prop] = this[prop as keyof this];
-				this.requestUpdate()
-			}
-		}
-		if((this.constructor as any).WatchRender) {
-			const renderResult = this.render();
-			if(isLitTemplateResult(renderResult)) {
-				if(this.#diff(renderResult.values, this.#lastRenderValues)) {
-					this.requestUpdate();
-					this.#lastRenderValues = renderResult.values;
+				// private properties cannot be watched
+				if(prop.startsWith("#")){
+					throw new Error("Private properties cannot be watched");
+				}
+
+				// if the property is the render method, we need to compare the output
+				if(prop === "render") {
+					const renderResult = this.render();
+					if(isLitTemplateResult(renderResult)) {
+						if(this.#compareRenderOutput(renderResult.values, this.#lastRenderValues)) {
+							this.requestUpdate();
+							this.#lastRenderValues = renderResult.values;
+						}
+					}
+				}
+
+				// if the property is not the render method, we need to compare the value
+				// todo: use a deep comparison for objects
+				if(this.#lastTrackedValues[prop] !== this[prop as keyof this]) {
+					this.#lastTrackedValues[prop] = this[prop as keyof this];
+					this.requestUpdate()
 				}
 			}
 		}
 	}
+
+	return ClassWithImHTML as Constructor<IImHtmlElement> & typeof SuperClass;
 }
+
+export class ImHtmlElement extends ImHtml(LitElement) {}

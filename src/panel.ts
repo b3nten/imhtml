@@ -1,18 +1,14 @@
-import { CollapsableController, DraggableController } from "./controllers";
+import { CollapsableController, DraggableController, ResizeController } from "./controllers";
 import { component, css, html, property, track, ImHtmlElement } from "./base";
 
 @component("im-panel")
 export class ImPanel extends ImHtmlElement {
-
 	static styles = css`
 	.root {
-		position: fixed;
 		height: auto;
 		border-radius: .5rem;
 		overflow: hidden;
 		background-color: rgba(128, 128, 128);
-		min-width: 300px;
-		max-width: 600px;
 		userSelect: "none";
 	}
 	
@@ -44,11 +40,10 @@ export class ImPanel extends ImHtmlElement {
 
 	render() {
 		return html`
-			<div 
-				${this.collapsableController.bindRoot()}
-				${this.draggableController.bindRoot()}
+			<div
+				style=${{ width: "300px", height: "300px" }}
+				class="root drag-container"
 				${this.resizeController.bindRoot()}
-				class="root"
 			>
 				<div 
 					class="header" 

@@ -8,8 +8,6 @@ import '@spectrum-web-components/badge/sp-badge.js';
 import '@spectrum-web-components/slider/sp-slider.js';
 import '@spectrum-web-components/picker/sync/sp-picker.js'
 import '@spectrum-web-components/menu/sp-menu-item.js'
-import { createElement } from "./util";
-
 
 type GetterSetterPair<T> = {
 	get?: () => T;
@@ -38,6 +36,17 @@ const toGetterSetterPair = <T>(value: T | GetterSetterPair<T>): GetterSetterPair
 
 const hasSetter = <T>(value: unknown): value is { set: (value: T) => void } => {
 	return !!value && typeof value === "object" && ("set" in value && typeof value.set === "function");
+}
+
+@component("im-fps")
+export class ImHtmlFps extends ImHtmlElement {
+
+	public accessor delta: GetterSetterPair<number> = { get: () => 0 };
+	public accessor elapsed = { get: () => 0 };
+
+	render(){
+		return html`<sp-badge variant="neutral">${1 / (this.delta.get?.() ?? 1)} FPS</sp-badge>`;
+	}
 }
 
 @component("im-number")
@@ -320,76 +329,3 @@ export class ImHtmlSelect extends ImHtmlElement {
 
 @component("im-color")
 export class ImHtmlColor extends ImHtmlElement {}
-
-@component("im-resizable")
-export class ImHtmlResizable extends HTMLElement {
-
-	private leftHandle = createElement("div", { className: "left-handle", dataset: { direction: "left" } });
-	private rightHandle = createElement("a", {	className: "right-handle", dataset: { direction: "right" } });
-	private topHandle = createElement("div", {	className: "top-handle", dataset: { direction: "top" } });
-	private bottomHandle = createElement("div", {	className: "bottom-handle", dataset: { direction: "bottom" } });
-
-	private isCurrentlyResizing = false;
-	private resizeDirection: "left" | "right" | "top" | "bottom" | "none" = "none";
-
-	constructor(){
-		super();
-		this.style.position = "relative";
-	}
-
-	connectedCallback(){
-		this.appendChild(this.leftHandle);
-		this.appendChild(this.rightHandle);
-		this.appendChild(this.topHandle);
-		this.appendChild(this.bottomHandle);
-
-		for(const handle of [this.leftHandle, this.rightHandle, this.topHandle, this.bottomHandle]){
-			handle.addEventListener("mousedown", this.onMouseDown);
-		}
-	}
-
-	disconnectedCallback(){
-		this.leftHandle.remove();
-		this.rightHandle.remove();
-		this.topHandle.remove();
-		this.bottomHandle.remove();
-
-		for(const handle of [this.leftHandle, this.rightHandle, this.topHandle, this.bottomHandle]){
-			handle.removeEventListener("mousedown", this.onMouseDown);
-		}
-
-		window.removeEventListener("mousemove", this.onMouseMove);
-		window.removeEventListener("mouseup", this.onMouseUp);
-	}
-
-	onMouseDown(e: Event){
-		this.isCurrentlyResizing = true;
-		this.resizeDirection = (e.target as HTMLElement).dataset.direction as "left" | "right" | "top" | "bottom";
-		window.addEventListener("mousemove", this.onMouseMove);
-	}
-
-	onMouseMove(e: MouseEvent){
-		window.addEventListener("mouseup", this.onMouseUp);
-
-		if(!this.isCurrentlyResizing) return;
-
-		switch(this.resizeDirection){
-			case "left":
-				break;
-			case "right":
-				break;
-			case "top":
-				break;
-			case "bottom":
-				break;
-		}
-	}
-
-	onMouseUp(){
-		this.isCurrentlyResizing = false;
-		this.resizeDirection = "none";
-		window.removeEventListener("mousemove", this.onMouseMove);
-		window.removeEventListener("mouseup", this.onMouseUp);
-	}
-
-}

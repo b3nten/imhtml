@@ -1,8 +1,9 @@
+import { LitElement, ReactiveController, ReactiveControllerHost } from "lit";
+import { ref } from "lit/directives/ref.js";
+
 /****************************************************************************************
  * DraggableController
  *****************************************************************************************/
-import { ReactiveController, ReactiveControllerHost } from "lit";
-import { ref } from "lit/directives/ref.js";
 
 export class DraggableController implements ReactiveController {
 	accessor #root: HTMLElement | undefined;
@@ -237,3 +238,181 @@ export class CollapsableController implements ReactiveController {
 	}
 }
 
+/****************************************************************************************
+ * ResizeController
+ *****************************************************************************************/
+
+export class ResizeController implements ReactiveController {
+
+	public minimumWidth = 20;
+	public minimumHeight = 20;
+
+	public maximumWidth?: number;
+	public maximumHeight?: number;
+
+	private leftHandle = document.createElement("div");
+	private rightHandle = document.createElement("div");
+	private topHandle = document.createElement("div");
+	private bottomHandle = document.createElement("div");
+
+	private isCurrentlyResizing = false;
+	private resizeDirection: "left" | "right" | "top" | "bottom" | "none" = "none";
+
+	private positions = {
+		width: 0,
+		height: 0,
+		x: 0,
+		y: 0,
+		mouseX: 0,
+		mouseY: 0
+	}
+
+	constructor(private host: LitElement){
+		host.addController(this);
+		this.leftHandle.classList.add("imhtml-resizable-handle-left");
+		this.leftHandle.dataset.direction = "left";
+
+		this.rightHandle.classList.add("imhtml-resizable-handle-right");
+		this.rightHandle.dataset.direction = "right";
+
+		this.topHandle.classList.add("imhtml-resizable-handle-top");
+		this.topHandle.dataset.direction = "top";
+
+		this.bottomHandle.classList.add("imhtml-resizable-handle-bottom");
+		this.bottomHandle.dataset.direction = "bottom";
+	}
+
+	hostConnected(){
+		const style = document.createElement("style");
+		style.innerHTML = this.styleSheet;
+		this.host.renderRoot.appendChild(style);
+	}
+
+	hostDisconnected(){
+		for(const handle of [this.leftHandle, this.rightHandle, this.topHandle, this.bottomHandle]){
+			handle.removeEventListener("mousedown", this.onMouseDown);
+		}
+		window.removeEventListener("mousemove", this.onMouseMove);
+		window.removeEventListener("mouseup", this.onMouseUp);
+	}
+
+	public bindRoot(){
+		return ref((element) => {
+			this.updateRoot(element);
+		});
+	}
+
+	private styleSheet = `
+		.imhtml-resizable-handle-left {
+			background-color: rgba(0, 255, 0, 0.5);
+			position: absolute;
+			top: 0;
+			left: -3px;
+			width: 6px;
+			height: 100%;
+			cursor: ew-resize;
+		}
+
+		.imhtml-resizable-handle-right {
+			background-color: rgba(0, 255, 0, 0.5);
+			position: absolute;
+			top: 0;
+			right: -3px;
+			width: 6px;
+			height: 100%;
+			cursor: ew-resize;
+		}
+
+		.imhtml-resizable-handle-top {
+			background-color: rgba(0, 255, 0, 0.5);
+			position: absolute;
+			top: -3px;
+			left: 0;
+			width: 100%;
+			height: 6px;
+			cursor: ns-resize;
+		}
+
+		.imhtml-resizable-handle-bottom {
+			background-color: rgba(0, 255, 0, 0.5);
+			position: absolute;
+			bottom: -3px;
+			left: 0;
+			width: 100%;
+			height: 6px;
+			cursor: ns-resize;
+	`
+
+	private updateRoot(element?: Element){
+		if(!element) return;
+		for(const handle of [this.leftHandle, this.rightHandle, this.topHandle, this.bottomHandle]){
+			if(!element.contains(handle)){
+				handle.addEventListener("mousedown", this.onMouseDown as EventListener);
+				element.appendChild(handle);
+			}
+		}
+	}
+
+	private onMouseDown = (e: MouseEvent) => {
+		e.preventDefault();
+		this.isCurrentlyResizing = true;
+
+		this.resizeDirection = (e.target as HTMLElement).dataset.direction as "left" | "right" | "top" | "bottom";
+
+		this.positions.width = parseFloat(getComputedStyle(this, null).getPropertyValue('width').replace('px', ''));
+		this.positions.height = parseFloat(getComputedStyle(this, null).getPropertyValue('height').replace('px', ''));
+
+		this.positions.x = this.getBoundingClientRect().left;
+		this.positions.y = this.getBoundingClientRect().top;
+
+		this.positions.mouseX = e.pageX;
+		this.positions.mouseY = e.pageY;
+
+		window.addEventListener("mousemove", this.onMouseMove);
+	}
+
+	private onMouseMove = (e: MouseEvent) => {
+		window.addEventListener("mouseup", this.onMouseUp);
+
+		if(!this.isCurrentlyResizing) return;
+
+		switch(this.resizeDirection){
+			case "left": {
+				/*
+				new_width = element_original_width - (mouseX - original_mouseX)
+  			new_x = element_original_x - (mouseX - original_mouseX)
+				*/
+
+				const newWidth = this.positions.width - (e.pageX - this.positions.mouseX);
+				const newX = this.positions.x - (e.pageX - this.positions.mouseX);
+
+				if(this.maximumWidth && newWidth > this.maximumWidth) return;
+				if(newWidth < this.minimumWidth) return;
+
+				this.style.width = `${newWidth}px`;
+				this.style.left = `${newX}px`;
+
+				break;
+			}
+			case "right": {
+
+				break;
+			}
+			case "top":{
+
+				break;
+			}
+			case "bottom": {
+				
+				break;
+			}
+		}
+	}
+
+	private onMouseUp = () => {
+		this.isCurrentlyResizing = false;
+		this.resizeDirection = "none";
+		window.removeEventListener("mousemove", this.onMouseMove);
+		window.removeEventListener("mouseup", this.onMouseUp);
+	}
+}
